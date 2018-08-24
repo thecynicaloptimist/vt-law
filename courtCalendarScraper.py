@@ -2,6 +2,10 @@ import requests
 import re
 import datetime
 
+initialToPage = {
+    "A":"A", "B":"B", "C":"C", "D":"D", "E":"E", "F":"F", "G":"G", "H":"H", "I":"I-J", "J":"I-J", "K":"K", "L":"L", "M":"M", "N":"N", "O":"O", "P":"P", "Q":"Q-R", "R":"Q-R", "S":"S", "T":"T-V", "U":"T-V", "V":"T-V", "W":"W-Z", "X":"W-Z", "Y":"W-Z", "Z":"W-Z"
+}
+
 def datetimeparse(datestring:str):
     hour = int(datestring[14:16])
     if datestring[20:22] == 'PM':
@@ -10,9 +14,10 @@ def datetimeparse(datestring:str):
 
 counties = ['Addison','Bennington','Caledonia','Chittenden','Essex','Franklin','Grand Isle','Lamoille','Orange','Orleans','Rutland','Washington','Windham','Windsor']
 joinedcountyregex = '|'.join(counties)
-res = requests.get("http://www.state.vt.us/courts/atty/B_cal.htm#Backus_Robert_H.")
 
-def attnysection(attnyname:str):
+def attnysection(attnyname:str, lastInitial:str):
+    link = f"http://www.state.vt.us/courts/atty/{initialToPage[lastInitial]}_cal.htm"
+    res = requests.get(link)
     res.raise_for_status()
     ctcalregex = re.compile(attnyname + '.*?HR NOSHADE',re.DOTALL)
     attnysection = ctcalregex.search(res.text).group()
@@ -33,16 +38,8 @@ def events(section:str):
             docketno = docketnomatch.group()
             event = {'location':location, 'time':time, 'docketno':docketno,'matter':matter}
             events += [event]
-
     return events
 
-def attnyevents(attnyname:str):
-    section = attnysection(attnyname)
+def attnyevents(attnyname:str, lastInitial:str):
+    section = attnysection(attnyname, lastInitial)
     return events(section)
-
-
-
-
-
-
-
